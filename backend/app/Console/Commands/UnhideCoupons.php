@@ -29,35 +29,53 @@ class UnhideCoupons extends Command
     //
     $this->info("Requesting scoupy api for hidden coupons...");
 
-    $response = Http::withHeaders($this->getHeaders())
-      ->get('https://api2.scoupy.nl/v10/coupon/list', ['type' => 'cashback', 'hidden' => true]);
-    if ($response->ok()) {
+    $response = $this->getHiddenCoupons();
+
+    if (!$response->ok()) {
+      $this->error("Request failed!");
+      $this->error($response["error"]);
+      return;
+    } else {
       $this->info("Response Ok");
-      $list = $response['list'];
-      if (sizeof($list) == 0) {
-        $this->info("No hidden coupons");
-        return;
-      }
-      $this->info(sizeof($list) . " hidden coupons.");
+    }
 
-      $couponIds = array_map(function ($item) {
-        return $item['id_coupon'];
-      }, $list);
+    $list = $response['list'];
 
-      $this->info("Requesting scoupy api to unhide coupons...");
+    if (sizeof($list) == 0) {
+      $this->info("No hidden coupons");
+      return;
+    }
 
-      $response = Http::withHeaders($this->getHeaders())
-        ->post('https://api2.scoupy.nl/v1/coupon/unhide', ['coupon_ids' => $couponIds]);
+    $this->info(sizeof($list) . " hidden coupons.");
+    $this->info("Requesting scoupy api to unhide coupons...");
 
-      if ($response->ok()) {
-        $this->info("Success!");
-      } else {
-        $this->error($response['error']);
-      }
+    $response = $this->unhideCoupons($this->getCouponIdsFromList($list));
+
+    if ($response->ok()) {
+      $this->info("Success!");
+    } else {
+      $this->error($response['error']);
     }
   }
 
+  public function getHiddenCoupons()
+  {
+    return Http::withHeaders($this->getHeaders())
+      ->get('https://api2.scoupy.nl/v10/coupon/list', ['type' => 'cashback', 'hidden' => true]);
+  }
 
+  public function unhideCoupons($couponIds)
+  {
+    return Http::withHeaders($this->getHeaders())
+      ->post('https://api2.scoupy.nl/v1/coupon/unhide', ['coupon_ids' => $couponIds]);
+  }
+
+  public function getCouponIdsFromList($list)
+  {
+    return array_map(function ($item) {
+      return $item['id_coupon'];
+    }, $list);
+  }
   public function getHeaders()
   {
     //TODO: refactor keys to .env file
