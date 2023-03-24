@@ -31,6 +31,11 @@ const HomePage = () => {
 
   const handleCouponHidden = (id) => {
     setList(list.filter((item) => item.id_coupon != id));
+
+    messageApi.open({
+      type: "success",
+      content: "Coupon hidden!",
+    });
   };
 
   return (

@@ -6,7 +6,6 @@ const { Meta } = Card;
 
 const CouponCard = ({ item, onCouponHidden }) => {
   const [loading, setLoading] = useState(false);
-  const [couponIdToHide, setCouponIdToHide] = useState(null);
   const [messageApi, contextHolder] = message.useMessage();
 
   const hideCoupon = async (id) => {
@@ -15,10 +14,6 @@ const CouponCard = ({ item, onCouponHidden }) => {
       const response = await couponService.hide(id);
       if (response.status) {
         onCouponHidden(id);
-        messageApi.open({
-          type: "success",
-          content: "Coupone hidden!",
-        });
       }
     } catch (error) {
       messageApi.open({
@@ -27,12 +22,10 @@ const CouponCard = ({ item, onCouponHidden }) => {
       });
     } finally {
       setLoading(false);
-      setCouponIdToHide(null);
     }
   };
 
   const handleHideCoupon = (id) => {
-    setCouponIdToHide(id);
     hideCoupon(id);
   };
 
@@ -49,8 +42,7 @@ const CouponCard = ({ item, onCouponHidden }) => {
         }
         actions={[
           <Button
-            disabled={loading}
-            loading={item.id_coupon == couponIdToHide}
+            loading={loading}
             onClick={() => {
               handleHideCoupon(item.id_coupon);
             }}
