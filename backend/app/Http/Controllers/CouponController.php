@@ -14,9 +14,18 @@ class CouponController extends Controller
         $response = Http::withHeaders($this->getHeaders())
             ->get('https://api2.scoupy.nl/v10/coupon/list', ['type' => 'cashback']);
 
+        $list = [];
+        // the response list contains other types of coupons as well so filtering for cashback coupons
+        if ($response->ok()) {
+            $list = array_values(array_filter($response['list'], function ($item) {
+                return $item['coupon_type'] === "cashback";
+            }));
+
+        }
+
         return response()->json([
             'status' => $response->ok(),
-            'data' => $response->json()
+            'list' => $list
         ])->setStatusCode($response->status());
     }
 
