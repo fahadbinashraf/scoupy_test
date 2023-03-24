@@ -22,9 +22,17 @@ class CouponController extends Controller
 
     public function hide(Request $request): JsonResponse
     {
-        return response()->json([
-            'status' => true
+        $request->validate([
+            'id' => ['required']
         ]);
+
+        $response = Http::withHeaders($this->getHeaders())
+            ->post('https://api2.scoupy.nl/v1/coupon/hide', ['coupon_ids' => [$request->id]]);
+
+        return response()->json([
+            'status' => $response->ok(),
+            'data' => $response->json()
+        ])->setStatusCode($response->status());
     }
 
     public function getHeaders()
