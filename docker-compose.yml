@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+
+  backend:
+    container_name: scoupy_test_backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    volumes:
+      - ./backend/app:/app/backend/app
+      - ./backend/database:/app/backend/database
+      - ./backend/routes:/app/backend/routes
+      - ./backend/.env:/app/backend/.env
+      - ./backend/composer.json:/app/backend/composer.json
+    networks:
+      - app
+
+  frontend:
+    container_name: scoupy_test_frontend
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    volumes:
+      - ./frontend/src:/app/frontend/src
+      - ./frontend/public:/app/frontend/public
+    depends_on:
+      - backend
+    networks:
+      - app
+
+networks:
+
+  app:
+    driver: bridge
